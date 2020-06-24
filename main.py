@@ -3,7 +3,7 @@ import logging
 from time import sleep
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
-from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
+from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent, PreferencesUpdateEvent, PreferencesEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
@@ -12,12 +12,14 @@ from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 logger = logging.getLogger(__name__)
 
 
-class DemoExtension(Extension):
+class FastTipsExtension(Extension):
 
     def __init__(self):
-        super(DemoExtension, self).__init__()
+        super(FastTipsExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
+        self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
+        self.subscribe(PreferencesEvent, PreferencesEventListener())
 
 
 class KeywordQueryEventListener(EventListener):
@@ -45,5 +47,17 @@ class ItemEnterEventListener(EventListener):
                                                            on_enter=HideWindowAction())])
 
 
+class PreferencesUpdateEventListener(EventListener):
+
+    def on_event(self, event, extension):
+        logger.info('############### PreferencesUpdateEventListener')
+
+
+class PreferencesEventListener(EventListener):
+
+    def on_event(self, event, extension):
+        logger.info('####### START ######## PreferencesEventListener')
+
+
 if __name__ == '__main__':
-    DemoExtension().run()
+    FastTipsExtension().run()

@@ -11,8 +11,8 @@
     {
       "id": "demo_kw",
       "type": "keyword",
-      "name": "Demo",
-      "default_value": "dm"
+      "name": "FastTips",
+      "default_value": "ft"
     },
     {
       "id": "item_name",
