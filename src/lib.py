@@ -20,7 +20,7 @@ def get_data_from_text(text):
     return {"cmd": ls[0], "desc": ls[1]}
 
 
-class FileHandler:
+class DataHandler:
     def __init__(self, folder_path):
         self.folder_path = folder_path
         self.data = []
@@ -41,12 +41,33 @@ class FileHandler:
         return self.data
 
 
+class SearchQuery:
+    def __init__(self, src, search_string):
+        self.src = src
+        self.search_string = search_string
+
+    @classmethod
+    def from_text(cls, text):
+        if text.startswith('#'):
+            src, search_string = text[1:].strip().split(' ', 1)
+            return cls(src, search_string)
+        return cls('', text)
+
+
+class QueryHandler:
+    def __init__(self, file_handler):
+        pass
+
+    def make_search(self, search_query):
+        pass
+
+
 def main():
     folder_path = path.expanduser("../.data")
-    file_handler = FileHandler(folder_path)
-    file_paths = file_handler.get_file_paths()
+    data_handler = DataHandler(folder_path)
+    file_paths = data_handler.get_file_paths()
     print('files: ' + ''.join(file_paths))
-    texts_items = file_handler.get_data()
+    texts_items = data_handler.get_data()
     for dd in texts_items[10:20]:
         print(dd)
 
