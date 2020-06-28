@@ -38,17 +38,32 @@ def get_data(file_paths):
     return text_list
 
 
-def make_search_result(query_result):
-    return query_result[0].split(' ', 1)[1]
+class SearchResultMapper:
+
+    def map(self, query_result):
+        result_str = query_result[0].split(' ', 1)[1]
+        result_tokens = result_str.split(' - ', 1)
+
+        if len(result_tokens) == 1:
+            return {
+                'name': result_str,
+                'description': ''
+            }
+
+        return {
+            'name': result_tokens[0],
+            'description': result_tokens[1]
+        }
 
 
 class QueryHandler:
-    def __init__(self, data):
+    def __init__(self, data, search_result_mapper):
         self.data = data
+        self.search_result_mapper = search_result_mapper
 
     def make_search(self, search_string, limit=5):
         results = process.extract(search_string, self.data, limit=limit)
-        return list(map(make_search_result, results))
+        return list(map(self.search_result_mapper.map, results))
 
     @classmethod
     def from_folder(cls, folder_path):
@@ -56,15 +71,4 @@ class QueryHandler:
         ensure_dir(_folder_path)
         file_paths = get_file_paths(_folder_path)
         data = get_data(file_paths)
-        return cls(data)
-
-
-def main():
-    folder_path = "~/cheat-sheets"
-    query_handler = QueryHandler.from_folder(folder_path)
-    search_string = "last command"
-    print(query_handler.make_search(search_string))
-
-
-if __name__ == '__main__':
-    main()
+        return cls(data, SearchResultMapper())

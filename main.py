@@ -40,15 +40,18 @@ class KeywordQueryEventListener(EventListener):
 
         # return RenderResultListAction(items)
 
-        results = query_handler.make_search(event.get_argument() or '')
+        qry = event.get_argument() or ''
+        if not qry:
+            return RenderResultListAction([])
+
+        results = query_handler.make_search(qry)
         items = []
-        for res in results:
-            data = {'new_name': res}
+        for data in results:
             items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name=res.split(' - ', 1)[0],
-                                             description=res,
-                                             on_enter=ExtensionCustomAction(data, keep_app_open=True)))
-        return RenderResultListAction(items) 
+                                            name=data['name'],
+                                            description=data['description'],
+                                            on_enter=ExtensionCustomAction(data, keep_app_open=True)))
+        return RenderResultListAction(items)
 
 
 class ItemEnterEventListener(EventListener):
@@ -56,20 +59,23 @@ class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         data = event.get_data()
         return RenderResultListAction([ExtensionResultItem(icon='images/icon.png',
-                                                           name=data['new_name'],
-                                                           on_enter=HideWindowAction())])
+                                                    name=data['name'],
+                                                    description=data['description'],
+                                                    on_enter=HideWindowAction())])
 
 
 class PreferencesUpdateEventListener(EventListener):
 
     def on_event(self, event, extension):
-        logger.info('############### PreferencesUpdateEventListener')
+        logger.info('####### PreferencesUpdateEventListener ########')
+        query_handler = QueryHandler.from_folder("~/cheat-sheets")
 
 
 class PreferencesEventListener(EventListener):
 
     def on_event(self, event, extension):
-        logger.info('####### START ######## PreferencesEventListener')
+        logger.info('####### PreferencesEventListener ########')
+        query_handler = QueryHandler.from_folder("~/cheat-sheets")
 
 
 if __name__ == '__main__':
