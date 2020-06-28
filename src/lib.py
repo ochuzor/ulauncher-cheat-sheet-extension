@@ -41,17 +41,19 @@ def get_data(file_paths):
 class SearchResultMapper:
 
     def map(self, query_result):
-        result_str = query_result[0].split(' ', 1)[1]
+        ''' query_result is a tuple of the form ('text', search_score) '''
+        text = query_result[0]
+        cheat_sheet_src, result_str = text.split(' ', 1)
         result_tokens = result_str.split(' - ', 1)
 
         if len(result_tokens) == 1:
             return {
-                'name': result_str,
+                'name': f'{cheat_sheet_src}: {result_str}',
                 'description': ''
             }
 
         return {
-            'name': result_tokens[0],
+            'name': f'{cheat_sheet_src}: {result_tokens[0]}',
             'description': result_tokens[1]
         }
 
@@ -67,13 +69,20 @@ class DataFactory:
         return data
 
 
+def filter_by_source(src_str, texts):
+    return list(filter(lambda str_val: str_val.startswith(src_str + ' '), texts))
+
+
 class SearchHandler:
     def __init__(self, data, search_result_mapper):
         self.__data = data
         self.search_result_mapper = search_result_mapper
 
     def make_search(self, search_string, limit=5):
-        results = process.extract(search_string, self.__data, limit=limit)
+        filter_str = search_string.split(' ', 1)[0] if search_string.startswith('#') else ''
+        data = filter_by_source(filter_str, self.__data) if filter_str else self.__data
+
+        results = process.extract(search_string, data, limit=limit)
         return list(map(self.search_result_mapper.map, results))
 
     def set_data(self, data):
