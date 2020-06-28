@@ -1,8 +1,8 @@
 {
   "required_api_version": "^2.0.0",
-  "name": "Demo",
+  "name": "cheat-sheets",
   "description": "Demo extension",
-  "developer_name": "Aleksandr Gornostal",
+  "developer_name": "Chinedu Eze",
   "icon": "images/icon.png",
   "options": {
     "query_debounce": 0.05
