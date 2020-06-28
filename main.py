@@ -9,11 +9,12 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 
-from src.lib import QueryHandler
+from src.lib import SearchHandler, DataFactory
+
 
 logger = logging.getLogger(__name__)
 
-query_handler = QueryHandler.from_folder("~/cheat-sheets")
+search_handler = SearchHandler.from_folder("~/cheat-sheets")
 
 class FastTipsExtension(Extension):
 
@@ -44,7 +45,7 @@ class KeywordQueryEventListener(EventListener):
         if not qry:
             return RenderResultListAction([])
 
-        results = query_handler.make_search(qry)
+        results = search_handler.make_search(qry)
         items = []
         for data in results:
             items.append(ExtensionResultItem(icon='images/icon.png',
@@ -68,14 +69,16 @@ class PreferencesUpdateEventListener(EventListener):
 
     def on_event(self, event, extension):
         logger.info('####### PreferencesUpdateEventListener ########')
-        query_handler = QueryHandler.from_folder("~/cheat-sheets")
+        data = DataFactory.load_data_from_folder("~/cheat-sheets")
+        search_handler.set_data(data)
 
 
 class PreferencesEventListener(EventListener):
 
     def on_event(self, event, extension):
         logger.info('####### PreferencesEventListener ########')
-        query_handler = QueryHandler.from_folder("~/cheat-sheets")
+        data = DataFactory.load_data_from_folder("~/cheat-sheets")
+        search_handler.set_data(data)
 
 
 if __name__ == '__main__':

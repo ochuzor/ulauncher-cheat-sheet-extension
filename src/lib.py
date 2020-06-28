@@ -56,19 +56,30 @@ class SearchResultMapper:
         }
 
 
-class QueryHandler:
-    def __init__(self, data, search_result_mapper):
-        self.data = data
-        self.search_result_mapper = search_result_mapper
+class DataFactory:
 
-    def make_search(self, search_string, limit=5):
-        results = process.extract(search_string, self.data, limit=limit)
-        return list(map(self.search_result_mapper.map, results))
-
-    @classmethod
-    def from_folder(cls, folder_path):
+    @staticmethod
+    def load_data_from_folder(folder_path):
         _folder_path = path.expanduser(folder_path)
         ensure_dir(_folder_path)
         file_paths = get_file_paths(_folder_path)
         data = get_data(file_paths)
+        return data
+
+
+class SearchHandler:
+    def __init__(self, data, search_result_mapper):
+        self.__data = data
+        self.search_result_mapper = search_result_mapper
+
+    def make_search(self, search_string, limit=5):
+        results = process.extract(search_string, self.__data, limit=limit)
+        return list(map(self.search_result_mapper.map, results))
+
+    def set_data(self, data):
+        self.__data = data
+
+    @classmethod
+    def from_folder(cls, folder_path):
+        data = DataFactory.load_data_from_folder(folder_path)
         return cls(data, SearchResultMapper())
