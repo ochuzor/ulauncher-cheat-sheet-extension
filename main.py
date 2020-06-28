@@ -9,8 +9,11 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 
+from src.lib import QueryHandler
+
 logger = logging.getLogger(__name__)
 
+query_handler = QueryHandler.from_folder("~/cheat-sheets")
 
 class FastTipsExtension(Extension):
 
@@ -25,17 +28,27 @@ class FastTipsExtension(Extension):
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
-        items = []
-        logger.info('preferences %s' % json.dumps(extension.preferences))
-        for i in range(5):
-            item_name = extension.preferences['item_name']
-            data = {'new_name': '%s %s was clicked' % (item_name, i)}
-            items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='%s %s' % (item_name, i),
-                                             description='Item description %s' % i,
-                                             on_enter=ExtensionCustomAction(data, keep_app_open=True)))
+        # items = []
+        # logger.info('preferences %s' % json.dumps(extension.preferences))
+        # for i in range(5):
+        #     item_name = extension.preferences['item_name']
+        #     data = {'new_name': '%s %s was clicked' % (item_name, i)}
+        #     items.append(ExtensionResultItem(icon='images/icon.png',
+        #                                      name='%s %s' % (item_name, i),
+        #                                      description='Item description %s' % i,
+        #                                      on_enter=ExtensionCustomAction(data, keep_app_open=True)))
 
-        return RenderResultListAction(items)
+        # return RenderResultListAction(items)
+
+        results = query_handler.make_search(event.get_argument() or '')
+        items = []
+        for res in results:
+            data = {'new_name': res}
+            items.append(ExtensionResultItem(icon='images/icon.png',
+                                             name=res.split(' - ', 1)[0],
+                                             description=res,
+                                             on_enter=ExtensionCustomAction(data, keep_app_open=True)))
+        return RenderResultListAction(items) 
 
 
 class ItemEnterEventListener(EventListener):
