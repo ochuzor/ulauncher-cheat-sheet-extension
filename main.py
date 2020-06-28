@@ -14,12 +14,13 @@ from src.lib import SearchHandler, DataFactory
 
 logger = logging.getLogger(__name__)
 
-search_handler = SearchHandler.from_folder("~/cheat-sheets")
+DEFAULT_CHEAT_SHEETS_DIR = "~/cheat-sheets"
+search_handler = SearchHandler.from_folder(DEFAULT_CHEAT_SHEETS_DIR)
 
-class FastTipsExtension(Extension):
+class CheatSheetExtension(Extension):
 
     def __init__(self):
-        super(FastTipsExtension, self).__init__()
+        super(CheatSheetExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
         self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
@@ -69,7 +70,7 @@ class PreferencesUpdateEventListener(EventListener):
 
     def on_event(self, event, extension):
         logger.info('####### PreferencesUpdateEventListener ########')
-        data = DataFactory.load_data_from_folder("~/cheat-sheets")
+        data = DataFactory.load_data_from_folder(DEFAULT_CHEAT_SHEETS_DIR)
         search_handler.set_data(data)
 
 
@@ -77,9 +78,9 @@ class PreferencesEventListener(EventListener):
 
     def on_event(self, event, extension):
         logger.info('####### PreferencesEventListener ########')
-        data = DataFactory.load_data_from_folder("~/cheat-sheets")
+        data = DataFactory.load_data_from_folder(DEFAULT_CHEAT_SHEETS_DIR)
         search_handler.set_data(data)
 
 
 if __name__ == '__main__':
-    FastTipsExtension().run()
+    CheatSheetExtension().run()
