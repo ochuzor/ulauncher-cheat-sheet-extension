@@ -1,10 +1,9 @@
 from os import path, makedirs
 import glob
+import re
 
 import fuzzywuzzy
 from fuzzywuzzy import process
-
-from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 
 
 def ensure_dir(DIR):
@@ -18,7 +17,7 @@ def get_file_paths(folder_path):
 
 def get_texts_from_file(file_path):
     texts = []
-    with open(file_path) as f:
+    with open(file_path, "r") as f:
         for ln in f.readlines():
             line = ln.strip()
             if line:
@@ -48,12 +47,12 @@ class SearchResultMapper:
 
         if len(result_tokens) == 1:
             return {
-                'name': f'{cheat_sheet_src}: {result_str}',
+                'name': f'[{cheat_sheet_src}] {result_str}',
                 'description': ''
             }
 
         return {
-            'name': f'{cheat_sheet_src}: {result_tokens[0]}',
+            'name': f'[{cheat_sheet_src}]: {result_tokens[0]}',
             'description': result_tokens[1]
         }
 
@@ -72,17 +71,42 @@ class DataFactory:
 def filter_by_source(src_str, texts):
     return list(filter(lambda str_val: str_val.startswith(src_str + ' '), texts))
 
+def get_search_object(search_string):
+    ss = " ".join(search_string.split())
+    first_token, *tokens = ss.split(' ')
+
+    filter_str = ""
+    search_string = ""
+
+    if first_token.startswith('#') and len(first_token) > 1:
+        filter_str = first_token
+        search_string = " ".join(tokens)
+
+    elif first_token == '#':
+        search_string = ' '.join(tokens)
+
+    else:
+        search_string = ss
+
+    return {
+        "filter_str": filter_str,
+        "search_string": search_string
+    }
+
+
 
 class SearchHandler:
     def __init__(self, data, search_result_mapper):
         self.__data = data
         self.search_result_mapper = search_result_mapper
 
-    def make_search(self, search_string, limit=5):
-        filter_str = search_string.split(' ', 1)[0] if search_string.startswith('#') else ''
-        data = filter_by_source(filter_str, self.__data) if filter_str else self.__data
+    def make_search(self, query_string, limit=5):        
+        search_object = get_search_object(query_string)
+        filter_str = search_object["filter_str"]
+        search_string = search_object["search_string"]
 
-        results = process.extract(search_string, data, limit=limit)
+        data = filter_by_source(filter_str, self.__data) if filter_str else self.__data
+        results = process.extract(search_string, data, scorer=fuzzywuzzy.fuzz.partial_token_sort_ratio, limit=limit) if search_string else []
         return list(map(self.search_result_mapper.map, results))
 
     def set_data(self, data):

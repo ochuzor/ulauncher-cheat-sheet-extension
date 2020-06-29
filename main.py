@@ -30,11 +30,8 @@ class CheatSheetExtension(Extension):
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
-        qry = event.get_argument() or ''
-        if not qry:
-            return RenderResultListAction([])
-
-        results = search_handler.make_search(qry)
+        qry_str = event.get_argument() or ''
+        results = search_handler.make_search(qry_str)
         items = []
         for data in results:
             items.append(ExtensionResultItem(icon='images/icon.png',
