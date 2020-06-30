@@ -33,7 +33,7 @@ def get_tokens(string_val):
     chunks = get_string_chunks(string_val)
     cleaned_chunks = list(map(chunks, get_normalized_string))
 
-    tokens = {}
+    tokens = set()
 
     for text_chunk in cleaned_chunks:
         words = get_text_words(text_chunk)
@@ -64,22 +64,20 @@ def add_text_to_index(index_hash, text, id):
 
     tokens = get_tokens(text)
     for token in tokens:
-        add_token_to_index(token, id, index_hash)
+        add_token_to_index(index_hash, token, id)
 
     return None
 
 
-def create_search_db(text_list):
+def create_search_index(text_list):
     """
-    pass it a list of '\n' texts (e.g. from a text file) and it'll return a search_db object
+    pass it a list of '\n'-split texts (e.g. from a text file) and it'll return a search_db object
     """
 
-    text_list = []
     index_hash = {}
 
-    for text in text_list:
-        text_list.append(text)
-        id = len(text_list) - 1
+    for id, text in enumerate(text_list):
         add_text_to_index(index_hash, text, id)
 
+    # return index_hash
     return None
