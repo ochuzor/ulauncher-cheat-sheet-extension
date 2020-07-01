@@ -4,43 +4,50 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from src.indexer_lib import get_tokens, get_ngrams, get_normalized_string, get_string_chunks
+from src.indexer_lib import get_tokens, get_digrams, get_normalized_string, get_string_chunks
 
 def test_get_tokens():
     assert get_tokens('') == []
     assert get_tokens('one') == ['one']
     assert get_tokens('Take that!') == ['take', 'that', 'take that']
+    assert get_tokens("Need for speed. I'm trynna take the lead.") == [
+        "need", "for", "speed", "need for", "for speed", "im", "trynna", "take",
+        "the", "lead", "im trynna", "trynna take", "take the", "the lead"
+    ]
 
 
-def test_get_ngrams_empty_string():
-    assert get_ngrams('', 1) == []
+def assert_list_h(list_1, list_2):
+    return len(list_1) == len(list_2) and set(list_1) == set(list_2)
 
 
-def test_get_ngrams_of_size_1():
-    assert get_ngrams('', 1) == []
-    assert get_ngrams('one', 1) == ['one']
-    assert get_ngrams('find file', 1) == ['find', 'file']
-    assert get_ngrams('we got it', 1) == ['we', 'got', 'it']
-    assert get_ngrams('where is the money', 1) == ['where', 'is', 'the', 'money']
-    assert get_ngrams('from the chap who left before the party started', 1) == ['from', 'the', 'chap', 'who', 'left', 'before', 'the', 'party', 'started']
+def test_assert_list_h():
+    assert assert_list_h(['one', 'two', 'three'], ['two', 'one', 'three']) == True
+    assert assert_list_h(['one', 'two'], ['two', 'one', 'three']) == False
+    assert assert_list_h(['one', 'one'], ['one', 'two']) == False
+    assert assert_list_h(['one', 'one'], ['two', 'one']) == False
+    assert assert_list_h(['one', 'two'], ['one', 'two']) == True
 
 
-def test_get_ngrams_of_size_2():
-    assert get_ngrams('', 2) == []
-    assert get_ngrams('one', 2) == ['one']
-    assert get_ngrams('find file', 2) == ['find file']
-    assert get_ngrams('we got it', 2) == ['we got', 'got it']
-    assert get_ngrams('where is the money', 2) == ['where is', 'is the', 'the money']
-    assert get_ngrams('from the chap who left before the party started', 2) == [
-            'from the', 'the chap', 'chap who', 'who left', 'left before', 'before the',
-            'the party', 'party started'
-        ]
+def test_get_digrams():
+    assert get_digrams([]) == []
+    assert get_digrams(['one']) == []
+    assert get_digrams(['find', 'file']) == ['find file']
+    assert assert_list_h(get_digrams(['we', 'got', 'it']), ['we got', 'got it']) == True
+
+    assert assert_list_h(get_digrams(['where', 'is', 'the', 'money']), 
+        ['where is', 'is the', 'the money']) == True
+
+    digrams = get_digrams(['from', 'the', 'chap', 'who', 'left', 'before', 'the', 'party', 'started'])
+    expected_digrams = [ 'from the', 'the chap', 'chap who', 'who left', 'left before', 
+    'before the', 'the party', 'party started']
+    assert assert_list_h(digrams, expected_digrams) == True
 
 
 def test_get_normalized_string():
     assert get_normalized_string('') == ''
     assert get_normalized_string('where     is       it') == 'where is it'
-    assert get_normalized_string("Well,     THat's   just Great!") == "well thats just great"
+    assert get_normalized_string("Well,     THat's   just Great!") == "well that's just great"
+    assert get_normalized_string("@money! It's all #* #num") == "money it all about num"
 
 
 def test_get_string_chunks():
@@ -54,5 +61,5 @@ def test_get_string_chunks():
     assert get_string_chunks('Call me tomorrow; you can give me an answer then.') == ['Call me tomorrow', 'you can give me an answer then']
     assert get_string_chunks('Bring any two items; however, sleeping bags and tents are in short supply.   ') == [
         'Bring any two items', 'however', 'sleeping bags and tents are in short supply']
-    assert get_string_chunks('one! He yelled') == ['one', 'he yelled']
-    assert get_string_chunks('one! ! He yelled') == ['one', 'he yelled']
+    assert get_string_chunks('one! He yelled') == ['one', 'He yelled']
+    assert get_string_chunks('one! ! He yelled') == ['one', 'He yelled']

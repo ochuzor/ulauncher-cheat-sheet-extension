@@ -1,12 +1,17 @@
+import re
 
 def get_string_chunks(string_val):
     """
     splits the supplied string by ,.!?;:
     that is, it tries to break supplied string into sentences
     """
-    return None
+    # https://stackoverflow.com/a/9797398
+    string_list = re.split('[?.,!;:]', string_val)
+    string_list = map(str.strip, string_list)
+    return list(filter(len, string_list))
 
     
+rex = re.compile(r"\W+")
 def get_normalized_string(string_val):
     """
     returns the supplied string with 
@@ -15,18 +20,30 @@ def get_normalized_string(string_val):
         - trailing spaces removed
         - lower-case'd
     """
-    return None
+    return rex.sub(' ', string_val).strip().lower()
 
 
-def get_ngrams(token_list, size=1):
-    return None
+def get_digrams(token_list):
+    token_count = len(token_list)
+
+    if token_count < 2:
+        return []
+    if token_count == 2:
+        return [" ".join(token_list)]
+
+    digrams = set()
+    for index, token in enumerate(token_list):
+        if index < (token_count - 1):
+            digrams.add(f"{token} {token_list[index + 1]}")
+
+    return list(digrams)
 
 
 def get_text_words(text):
     """
     splits the text by space into list of words, removing empty strings from the list
     """
-    pass
+    return text.split(' ')
 
 
 def get_tokens(string_val):
@@ -37,20 +54,28 @@ def get_tokens(string_val):
 
     for text_chunk in cleaned_chunks:
         words = get_text_words(text_chunk)
-        tokens.update(get_ngrams(words, 1))
-        tokens.update(get_ngrams(words, 2))
+        tokens.update(words)
+        tokens.update(get_digrams(words))
 
-    # return list(tokens)
-    return None
+    return list(tokens)
 
 
 def add_token_to_index(index_hash, token_str, id):
     """
     token_str is the token string
-    id is the id of the original text in the "db"; the index of the text in the text array
-    index_hash is index hash of the form {token_str: [1, 2,...]}; 1, 2,...are the list of text id's
+    id is the id of the original text in the "db" 
+        (i.e the index of the text in the text array)
+    index_hash is index hash of the form {token_str: set(1, 2,...)}; 
+        1, 2,...are the list of text id's
     """
-    pass
+
+    if token_str not in index_hash:
+        index_hash[token_str] = set()
+    
+    index_hash[token_str].add(id)
+
+    return index_hash
+
 
 
 def add_text_to_index(index_hash, text, id):
@@ -66,12 +91,13 @@ def add_text_to_index(index_hash, text, id):
     for token in tokens:
         add_token_to_index(index_hash, token, id)
 
-    return None
+    return index_hash
 
 
 def create_search_index(text_list):
     """
-    pass it a list of '\n'-split texts (e.g. from a text file) and it'll return a search_db object
+    pass it a list of '\n'-split texts (e.g. from a text file) 
+    and it'll return a search_db object
     """
 
     index_hash = {}
@@ -79,5 +105,4 @@ def create_search_index(text_list):
     for id, text in enumerate(text_list):
         add_text_to_index(index_hash, text, id)
 
-    # return index_hash
-    return None
+    return index_hash
