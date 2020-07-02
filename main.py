@@ -10,12 +10,14 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 
 from src.lib import SearchHandler, DataFactory
+from src.grep_search_handler import GrepSearchHandler
 
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_CHEAT_SHEETS_DIR = "~/cheat-sheets"
-search_handler = SearchHandler.from_folder(DEFAULT_CHEAT_SHEETS_DIR)
+# search_handler = SearchHandler.from_folder(DEFAULT_CHEAT_SHEETS_DIR)
+search_handler = GrepSearchHandler(DEFAULT_CHEAT_SHEETS_DIR)
 
 class CheatSheetExtension(Extension):
 
@@ -23,8 +25,8 @@ class CheatSheetExtension(Extension):
         super(CheatSheetExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
-        self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
-        self.subscribe(PreferencesEvent, PreferencesEventListener())
+        # self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
+        # self.subscribe(PreferencesEvent, PreferencesEventListener())
 
 
 class KeywordQueryEventListener(EventListener):
