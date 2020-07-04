@@ -7,9 +7,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+class SearchResultMapper:
+    def map(self, result_string):
+        line = result_string.split(':', 1)[1]
+        cmd, desc = line.split(' - ')
+        
+        return {
+            "name": cmd,
+            "description": desc
+        }
+
+
 class GrepSearchHandler:
-    def __init__(self, texts_dir):
+    def __init__(self, texts_dir, search_results_mapper):
         self.texts_dir = path.expanduser(texts_dir)
+        self.search_results_mapper = search_results_mapper
 
 
     def make_search(self, search_term):
@@ -23,17 +36,10 @@ class GrepSearchHandler:
             cmd_ls = ["grep", "-r", "-i", '--include="*.txt"', 
                 f"'{search_term}'",
                 self.texts_dir]
+            cmd_str = ' '.join(cmd_ls)
+            logger.info(f"cmd: {cmd_str}")
 
-            logger.info(f"cmd: {' '.join(cmd_ls)}")
-
-            # resp = subprocess.run(cmd_ls, 
-            #     stdout=subprocess.PIPE, 
-            #     stderr=subprocess.PIPE, 
-            #     check=True,
-            #     shell=True,
-            #     cwd=self.texts_dir)
-
-            resp = subprocess.run(' '.join(cmd_ls), 
+            resp = subprocess.run(cmd_str,
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE, 
                 check=True,
@@ -44,16 +50,9 @@ class GrepSearchHandler:
             if not output_text.strip():
                 return []
 
-            results = []
-            for index, line in enumerate(output_text.splitlines()[:10]):
-                ln = line.split(':', 1)[1]
-                cmd, desc = ln.split(' - ')
-                results.append({
-                    "name": cmd,
-                    "description": desc
-                })
-            
-            return results
+            ls = output_text.splitlines()[:10]
+            map_itr = map(self.search_results_mapper.map, ls)
+            return list(map_itr)
 
         except subprocess.CalledProcessError as exc:
             if exc.returncode == 1:
@@ -65,3 +64,7 @@ class GrepSearchHandler:
                 logger.error(msg)
 
             return []
+
+    @classmethod
+    def from_directory(cls, texts_dir):
+        return cls(texts_dir, SearchResultMapper())
