@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class SearchResultMapper:
     def map(self, result_string):
-        line = result_string.split(':', 1)[1]
+        line = result_string.strip().split(':', 1)[1]
         tokens = line.split(' - ')
         
         return {
@@ -19,17 +19,32 @@ class SearchResultMapper:
         }
 
 
-class searchQueryMapper:
+class SearchQueryMapper:
     def map(self, search_str):
-        return {
+        tokens = ' '.join(search_str.split()).strip().split(' ')
+        
+        # python string split guarantees there's at least a single item in the list
+        first_token = tokens[0]
+
+        query_object = {
             "dest": "",
-            "pattern": ""
+            "term": ""
         }
+
+        if first_token.startswith('#'):
+            query_object["dest"] = first_token[1:].lower()
+            query_object["term"] = " ".join(tokens[1:])
+
+        else:
+            query_object["term"] = " ".join(tokens)
+
+        return query_object
 
 
 class GrepSearchHandler:
-    def __init__(self, texts_dir, search_results_mapper):
+    def __init__(self, texts_dir, search_query_mapper, search_results_mapper):
         self.texts_dir = texts_dir
+        self.search_query_mapper = search_query_mapper
         self.search_results_mapper = search_results_mapper
 
 
@@ -75,4 +90,6 @@ class GrepSearchHandler:
 
     @classmethod
     def from_directory(cls, texts_dir):
-        return cls(path.expanduser(texts_dir), SearchResultMapper())
+        return cls(path.expanduser(texts_dir), 
+            SearchQueryMapper(), 
+            SearchResultMapper())
