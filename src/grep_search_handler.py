@@ -11,17 +11,25 @@ logger = logging.getLogger(__name__)
 class SearchResultMapper:
     def map(self, result_string):
         line = result_string.split(':', 1)[1]
-        cmd, desc = line.split(' - ')
+        tokens = line.split(' - ')
         
         return {
-            "name": cmd,
-            "description": desc
+            "name": tokens[0],
+            "description": tokens[1] if len(tokens) > 1 else ''
+        }
+
+
+class searchQueryMapper:
+    def map(self, search_str):
+        return {
+            "dest": "",
+            "pattern": ""
         }
 
 
 class GrepSearchHandler:
     def __init__(self, texts_dir, search_results_mapper):
-        self.texts_dir = path.expanduser(texts_dir)
+        self.texts_dir = texts_dir
         self.search_results_mapper = search_results_mapper
 
 
@@ -67,4 +75,4 @@ class GrepSearchHandler:
 
     @classmethod
     def from_directory(cls, texts_dir):
-        return cls(texts_dir, SearchResultMapper())
+        return cls(path.expanduser(texts_dir), SearchResultMapper())
