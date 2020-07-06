@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class SearchResultMapper:
     def map(self, result_string):
+        # /home/chinedu/cheat-sheets/vim-commands.txt:Ctrl + y - move screen up one line (without moving cursor)
         line = result_string.strip().split(':', 1)[1]
         tokens = line.split(' - ')
         
@@ -41,23 +42,17 @@ class SearchQueryMapper:
         return query_object
 
 
-class GrepSearchHandler:
-    def __init__(self, texts_dir, search_query_mapper, search_results_mapper):
+class GrepWrapper:
+    def __init__(self, texts_dir):
         self.texts_dir = texts_dir
-        self.search_query_mapper = search_query_mapper
-        self.search_results_mapper = search_results_mapper
 
-
-    def make_search(self, search_term):
+    def grep(self, str_pattern):
         try:
-            if not search_term.strip():
-                return []
-
             # cmd_ls = ["grep", "-i", search_term, 'vim-commands.txt', 'git-command.txt']
             # https://stackoverflow.com/a/35280826
             # grep -r -i --include=\*.txt 'searchterm' ./
             cmd_ls = ["grep", "-r", "-i", '--include="*.txt"', 
-                f"'{search_term}'",
+                f"'{str_pattern}'",
                 self.texts_dir]
             cmd_str = ' '.join(cmd_ls)
             logger.info(f"cmd: {cmd_str}")
@@ -72,11 +67,8 @@ class GrepSearchHandler:
             output_text = resp.stdout.decode("utf-8")
             if not output_text.strip():
                 return []
-
-            ls = output_text.splitlines()[:10]
-            map_itr = map(self.search_results_mapper.map, ls)
-            return list(map_itr)
-
+            
+            return output_text.splitlines()
         except subprocess.CalledProcessError as exc:
             if exc.returncode == 1:
                 # grep returns 1 if it didn't find anything: https://stackoverflow.com/a/28689969
@@ -87,6 +79,33 @@ class GrepSearchHandler:
                 logger.error(msg)
 
             return []
+
+
+class GrepSearchHandler:
+    def __init__(self, texts_dir, search_query_mapper, search_results_mapper):
+        self.search_query_mapper = search_query_mapper
+        self.search_results_mapper = search_results_mapper
+        self.grep_wrapper = GrepWrapper(texts_dir)
+
+    def make_search(self, search_term):
+            query = self.search_query_mapper.map(search_term)
+            term = query["term"]
+            dest = query["dest"]
+            if not term and not dest:
+                return []
+
+            ls = self.grep_wrapper.grep(term)
+            MAX_RESULT_COUNT = 10
+            result_list = []
+            loop_index = 0
+
+            while len(result_list) < MAX_RESULT_COUNT and loop_index < len(ls):
+                res = self.search_results_mapper.map(ls[loop_index])
+                if res["name"] or res["description"]:
+                    result_list.append(res)
+                loop_index += 1
+
+            return result_list
 
     @classmethod
     def from_directory(cls, texts_dir):
