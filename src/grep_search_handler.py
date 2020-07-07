@@ -2,6 +2,7 @@ from logging import log
 import re
 import subprocess
 from os import path
+from itertools import chain
 
 import logging
 
@@ -82,6 +83,13 @@ class GrepWrapper:
             return []
 
 
+def grep_search_iter_fn(grep_wrapper, text):
+    yield grep_wrapper.grep(text)
+    while text.count(' ') > 0:
+        text = text.replace(' ', '.*', 1)
+        yield grep_wrapper.grep(text)
+
+
 class GrepSearchHandler:
     def __init__(self, grep_wrapper, search_query_mapper, search_results_mapper):
         self.grep_wrapper = grep_wrapper
@@ -95,17 +103,17 @@ class GrepSearchHandler:
             if not term and not dest:
                 return []
 
-            ls = self.grep_wrapper.grep(term)
+            res_iter = grep_search_iter_fn(self.grep_wrapper, term)
             MAX_RESULT_COUNT = 10
             result_list = []
-            loop_index = 0
 
-            while len(result_list) < MAX_RESULT_COUNT and loop_index < len(ls):
-                res = self.search_results_mapper.map(ls[loop_index])
+            for res_str in chain.from_iterable(res_iter):
+                res = self.search_results_mapper.map(res_str)
                 if res["name"] or res["description"]:
                     result_list.append(res)
-                loop_index += 1
-
+                if len(result_list) >= MAX_RESULT_COUNT:
+                    break
+            
             return result_list
 
     @classmethod
