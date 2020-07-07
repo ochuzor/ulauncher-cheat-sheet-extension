@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 class SearchResultMapper:
     def map(self, result_string):
         # /home/chinedu/cheat-sheets/vim-commands.txt:Ctrl + y - move screen up one line (without moving cursor)
-        line = result_string.strip().split(':', 1)[1]
+        src, line = result_string.strip().split(':', 1)
         tokens = line.split(' - ')
         
         return {
             "name": tokens[0],
-            "description": tokens[1] if len(tokens) > 1 else ''
+            "description": tokens[1] if len(tokens) > 1 else "",
+            "src": src
         }
 
 
@@ -82,10 +83,10 @@ class GrepWrapper:
 
 
 class GrepSearchHandler:
-    def __init__(self, texts_dir, search_query_mapper, search_results_mapper):
+    def __init__(self, grep_wrapper, search_query_mapper, search_results_mapper):
+        self.grep_wrapper = grep_wrapper
         self.search_query_mapper = search_query_mapper
         self.search_results_mapper = search_results_mapper
-        self.grep_wrapper = GrepWrapper(texts_dir)
 
     def make_search(self, search_term):
             query = self.search_query_mapper.map(search_term)
@@ -109,6 +110,7 @@ class GrepSearchHandler:
 
     @classmethod
     def from_directory(cls, texts_dir):
-        return cls(path.expanduser(texts_dir), 
+        _dir = path.expanduser(texts_dir)
+        return cls(GrepWrapper(_dir), 
             SearchQueryMapper(), 
             SearchResultMapper())
