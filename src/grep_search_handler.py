@@ -3,16 +3,31 @@ import re
 import subprocess
 from os import path
 from itertools import chain
+from collections import OrderedDict
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 
+# note https://stackoverflow.com/a/36300197
+def get_result_parts(result_str):
+    if result_str.count(":") == 1:
+        return result_str.split(":")
+    else:
+        tokens = result_str.split(":", 2)
+        src = ":".join(tokens[:2])
+        line = tokens[2]
+        return src, line
+
+
 class SearchResultMapper:
     def map(self, result_string):
         # /home/chinedu/cheat-sheets/vim-commands.txt:Ctrl + y - move screen up one line (without moving cursor)
-        src, line = result_string.strip().split(':', 1)
+        # /home/chinedu/cheat-sheets/vim-commands.txt:1:Ctrl + y - move screen up one line (without moving cursor)
+        # print(f"res => {result_string}")
+
+        src, line = get_result_parts(result_string)
         tokens = line.split(' - ')
         
         return {
@@ -53,11 +68,11 @@ class GrepWrapper:
             # cmd_ls = ["grep", "-i", search_term, 'vim-commands.txt', 'git-command.txt']
             # https://stackoverflow.com/a/35280826
             # grep -r -i --include=\*.txt 'searchterm' ./
-            cmd_ls = ["grep", "-r", "-i", '--include="*.txt"', 
+            cmd_ls = ["grep", "-r", "-i", "-n", '--include="*.txt"', 
                 f"'{str_pattern}'",
                 self.texts_dir]
             cmd_str = ' '.join(cmd_ls)
-            logger.info(f"cmd: {cmd_str}")
+            # logger.info(f"cmd: {cmd_str}")
 
             resp = subprocess.run(cmd_str,
                 stdout=subprocess.PIPE, 
@@ -74,7 +89,7 @@ class GrepWrapper:
         except subprocess.CalledProcessError as exc:
             if exc.returncode == 1:
                 # grep returns 1 if it didn't find anything: https://stackoverflow.com/a/28689969
-                logger.info("grep didn't find anything.")
+                logger.info(f"grep didn't find anything")
             else:
                 err_msg = exc.stderr.decode("utf-8")
                 msg = f"FAIL code: {exc.returncode} => {err_msg}"
@@ -88,6 +103,22 @@ def grep_search_iter_fn(grep_wrapper, text):
     while text.count(' ') > 0:
         text = text.replace(' ', '.*', 1)
         yield grep_wrapper.grep(text)
+
+
+class ResultList:
+    def __init__(self):
+        self.__ls_results = OrderedDict()
+
+    def add(self, result):
+        src = result["src"]
+        if src not in self.__ls_results:
+            self.__ls_results[src] = result
+
+    def count(self):
+        return len(self.__ls_results)
+
+    def to_list(self):
+        return self.__ls_results.values()
 
 
 class GrepSearchHandler:
@@ -105,16 +136,18 @@ class GrepSearchHandler:
 
             res_iter = grep_search_iter_fn(self.grep_wrapper, term)
             MAX_RESULT_COUNT = 10
-            result_list = []
+            result_list = ResultList()
 
             for res_str in chain.from_iterable(res_iter):
                 res = self.search_results_mapper.map(res_str)
                 if res["name"] or res["description"]:
-                    result_list.append(res)
-                if len(result_list) >= MAX_RESULT_COUNT:
+                    result_list.add(res)
+                if result_list.count() >= MAX_RESULT_COUNT:
                     break
+
+            return result_list.to_list()
+
             
-            return result_list
 
     @classmethod
     def from_directory(cls, texts_dir):
