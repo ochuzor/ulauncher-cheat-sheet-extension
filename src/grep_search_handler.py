@@ -10,24 +10,23 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# note https://stackoverflow.com/a/36300197
-def get_result_parts(result_str):
-    if result_str.count(":") == 1:
-        return result_str.split(":")
-    else:
-        tokens = result_str.split(":", 2)
-        src = ":".join(tokens[:2])
-        line = tokens[2]
+class SearchResultMapper:
+    # note https://stackoverflow.com/a/36300197
+    def get_result_parts(self, result_str):
+        if result_str.count(":") == 1:
+            return result_str.split(":")
+        else:
+            tokens = result_str.split(":", 2)
+            src = ":".join(tokens[:2])
+            line = tokens[2]
         return src, line
 
-
-class SearchResultMapper:
     def map(self, result_string):
         # /home/chinedu/cheat-sheets/vim-commands.txt:Ctrl + y - move screen up one line (without moving cursor)
         # /home/chinedu/cheat-sheets/vim-commands.txt:1:Ctrl + y - move screen up one line (without moving cursor)
         # print(f"res => {result_string}")
 
-        src, line = get_result_parts(result_string)
+        src, line = self.get_result_parts(result_string)
         tokens = line.split(' - ')
         
         return {
@@ -146,8 +145,6 @@ class GrepSearchHandler:
                     break
 
             return result_list.to_list()
-
-            
 
     @classmethod
     def from_directory(cls, texts_dir):
