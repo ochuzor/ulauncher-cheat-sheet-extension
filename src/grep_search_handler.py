@@ -7,32 +7,37 @@ from collections import OrderedDict
 
 import logging
 
+from attr import __description__
+
 logger = logging.getLogger(__name__)
 
 
 class SearchResultMapper:
     # note https://stackoverflow.com/a/36300197
-    def get_result_parts(self, result_str):
-        if result_str.count(":") == 1:
-            return result_str.split(":")
-        else:
-            tokens = result_str.split(":", 2)
-            src = ":".join(tokens[:2])
-            line = tokens[2]
-        return src, line
+    # def get_result_parts(self, result_str):
+    #     src = ":".join(tokens[:2])
+    #     line = tokens[2]
 
     def map(self, result_string):
-        # /home/chinedu/cheat-sheets/vim-commands.txt:Ctrl + y - move screen up one line (without moving cursor)
         # /home/chinedu/cheat-sheets/vim-commands.txt:1:Ctrl + y - move screen up one line (without moving cursor)
         # print(f"res => {result_string}")
 
-        src, line = self.get_result_parts(result_string)
-        tokens = line.split(' - ')
+        file_loc, line_num, text = result_string.split(":", 2)
+
+        text_parts = text.split(" - ")
+        cmd = text_parts[0].strip()
+        description = text_parts[1].strip() if len(text_parts) > 1 else cmd
+
+        src = path.basename(file_loc).split("-")[0]
+        id = f"{file_loc}:{line_num}"
+        name = f"[{src}] {cmd}" if cmd else ""
         
         return {
-            "name": tokens[0],
-            "description": tokens[1] if len(tokens) > 1 else "",
-            "src": src
+            "id": id,
+            "name": name,
+            "description": description,
+            "src": src,
+            "cmd": cmd
         }
 
 
@@ -109,9 +114,9 @@ class ResultList:
         self.__ls_results = OrderedDict()
 
     def add(self, result):
-        src = result["src"]
-        if src not in self.__ls_results:
-            self.__ls_results[src] = result
+        id = result["id"]
+        if id not in self.__ls_results:
+            self.__ls_results[id] = result
 
     def count(self):
         return len(self.__ls_results)
