@@ -96,12 +96,12 @@ class GrepWrapper:
 
             return []
 
+    def search_iter(self, text):
+        yield self.grep(text)
+        while text.count(' ') > 0:
+            text = text.replace(' ', '.*', 1)
+            yield self.grep(text)
 
-def grep_search_iter_fn(grep_wrapper, text):
-    yield grep_wrapper.grep(text)
-    while text.count(' ') > 0:
-        text = text.replace(' ', '.*', 1)
-        yield grep_wrapper.grep(text)
 
 
 class ResultList:
@@ -133,7 +133,7 @@ class GrepSearchHandler:
             if not term and not dest:
                 return []
 
-            res_iter = grep_search_iter_fn(self.grep_wrapper, term)
+            res_iter = self.grep_wrapper.search_iter(term)
             MAX_RESULT_COUNT = 10
             result_list = ResultList()
 
