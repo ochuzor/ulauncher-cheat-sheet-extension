@@ -16,7 +16,6 @@ from src.grep_search_handler import GrepSearchHandler
 logger = logging.getLogger(__name__)
 
 DEFAULT_CHEAT_SHEETS_DIR = "~/cheat-sheets"
-# search_handler = SearchHandler.from_folder(DEFAULT_CHEAT_SHEETS_DIR)
 search_handler = GrepSearchHandler.from_directory(DEFAULT_CHEAT_SHEETS_DIR)
 
 class CheatSheetExtension(Extension):

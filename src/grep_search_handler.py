@@ -13,10 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class SearchResultMapper:
-    # note https://stackoverflow.com/a/36300197
-    # def get_result_parts(self, result_str):
-    #     src = ":".join(tokens[:2])
-    #     line = tokens[2]
 
     def map(self, result_string):
         # /home/chinedu/cheat-sheets/vim-commands.txt:1:Ctrl + y - move screen up one line (without moving cursor)
@@ -134,8 +130,8 @@ class GrepSearchHandler:
     def make_search(self, search_term):
             query = self.search_query_mapper.map(search_term)
             term = query["term"]
-            src = query["src"]
-            if not term and not src:
+            src_query = query["src"]
+            if not term and not src_query:
                 # todo return the last history
                 return []
 
@@ -145,8 +141,14 @@ class GrepSearchHandler:
 
             for res_str in chain.from_iterable(res_iter):
                 res = self.search_results_mapper.map(res_str)
+                
                 if res["name"] or res["description"]:
-                    result_list.add(res)
+                    if src_query:
+                        if res["src"] == src_query:
+                            result_list.add(res)
+                    else:
+                        result_list.add(res)
+
                 if result_list.count() >= MAX_RESULT_COUNT:
                     break
 
