@@ -17,20 +17,20 @@ def query_mapper_sut():
 
 
 def test_empty_string_mapping(query_mapper_sut):
-    assert query_mapper_sut.map('') == {"dest": "", "term": ""}
-    assert query_mapper_sut.map(' ') == {"dest": "", "term": ""}
-    assert query_mapper_sut.map('     ') == {"dest": "", "term": ""}
-    assert query_mapper_sut.map('  \t   ') == {"dest": "", "term": ""}
+    assert query_mapper_sut.map('') == {"src": "", "term": ""}
+    assert query_mapper_sut.map(' ') == {"src": "", "term": ""}
+    assert query_mapper_sut.map('     ') == {"src": "", "term": ""}
+    assert query_mapper_sut.map('  \t   ') == {"src": "", "term": ""}
 
 
 def test_str_with_src_query(query_mapper_sut):
-    assert query_mapper_sut.map('#') == {"dest": "", "term": ""}
-    assert query_mapper_sut.map('vim #') == {"dest": "", "term": "vim #"}
-    assert query_mapper_sut.map('vim # search term') == {"dest": "", "term": "vim # search term"}
-    assert query_mapper_sut.map('  #   \t ') == {"dest": "", "term": ""}
-    assert query_mapper_sut.map('#vim') == {"dest": "vim", "term": ""}
-    assert query_mapper_sut.map('#vim search term') == {"dest": "vim", "term": "search term"}
-    assert query_mapper_sut.map('# vim') == {"dest": "", "term": "vim"}
-    assert query_mapper_sut.map('# vim search term') == {"dest": "", "term": "vim search term"}
-    assert query_mapper_sut.map('   #vim     \t ') == {"dest": "vim", "term": ""}
-    assert query_mapper_sut.map('   #vim     \t go to file') == {"dest": "vim", "term": "go to file"}
+    assert query_mapper_sut.map('#') == {"src": "", "term": ""}
+    assert query_mapper_sut.map('vim #') == {"src": "", "term": "vim #"}
+    assert query_mapper_sut.map('vim # search term') == {"src": "", "term": "vim # search term"}
+    assert query_mapper_sut.map('  #   \t ') == {"src": "", "term": ""}
+    assert query_mapper_sut.map('#vim') == {"src": "vim", "term": ""}
+    assert query_mapper_sut.map('#vim search term') == {"src": "vim", "term": "search term"}
+    assert query_mapper_sut.map('# vim') == {"src": "", "term": "vim"}
+    assert query_mapper_sut.map('# vim search term') == {"src": "", "term": "vim search term"}
+    assert query_mapper_sut.map('   #vim     \t ') == {"src": "vim", "term": ""}
+    assert query_mapper_sut.map('   #vim     \t go to file') == {"src": "vim", "term": "go to file"}

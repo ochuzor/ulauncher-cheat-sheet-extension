@@ -28,7 +28,7 @@ class SearchResultMapper:
         cmd = text_parts[0].strip()
         description = text_parts[1].strip() if len(text_parts) > 1 else cmd
 
-        src = path.basename(file_loc).split("-")[0]
+        src = path.basename(file_loc).split("-")[0].lower()
         id = f"{file_loc}:{line_num}"
         name = f"[{src}] {cmd}" if cmd else ""
         
@@ -49,12 +49,12 @@ class SearchQueryMapper:
         first_token = tokens[0]
 
         query_object = {
-            "dest": "",
+            "src": "",
             "term": ""
         }
 
         if first_token.startswith('#'):
-            query_object["dest"] = first_token[1:].lower()
+            query_object["src"] = first_token[1:].lower()
             query_object["term"] = " ".join(tokens[1:])
 
         else:
@@ -134,8 +134,9 @@ class GrepSearchHandler:
     def make_search(self, search_term):
             query = self.search_query_mapper.map(search_term)
             term = query["term"]
-            dest = query["dest"]
-            if not term and not dest:
+            src = query["src"]
+            if not term and not src:
+                # todo return the last history
                 return []
 
             res_iter = self.grep_wrapper.search_iter(term)
