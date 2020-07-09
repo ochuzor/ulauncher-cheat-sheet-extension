@@ -8,6 +8,7 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
+from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 
 from src.lib import SearchHandler, DataFactory
 from src.grep_search_handler import GrepSearchHandler
@@ -49,7 +50,7 @@ class ItemEnterEventListener(EventListener):
         return RenderResultListAction([ExtensionResultItem(icon='images/icon.png',
                                                     name=data['name'],
                                                     description=data['description'],
-                                                    on_enter=HideWindowAction())])
+                                                    on_enter=CopyToClipboardAction(data["cmd"]))])
 
 
 class PreferencesUpdateEventListener(EventListener):
