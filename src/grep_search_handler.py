@@ -121,22 +121,40 @@ class ResultList:
         return self.__ls_results.values()
 
 
+class HistoryList:
+    def __init__(self, result_list = [], max_items_count = 50):
+        self.__result_list = result_list
+        self.__max_items_count = max_items_count
+    
+    def add(self, data):
+        ls = self.__result_list[:self.__max_items_count - 1]
+        self.__result_list = [i for i in ls if i["id"] != data["id"]]
+        self.__result_list.insert(0, data)
+
+    def to_list(self):
+        return self.__result_list
+
+
 class GrepSearchHandler:
-    def __init__(self, grep_wrapper, search_query_mapper, search_results_mapper):
+    def __init__(self, max_result_count, grep_wrapper, search_query_mapper, search_results_mapper, history_list):
         self.grep_wrapper = grep_wrapper
         self.search_query_mapper = search_query_mapper
         self.search_results_mapper = search_results_mapper
+        self.history_list = history_list
+        self.max_result_count = max_result_count
 
     def make_search(self, search_term):
             query = self.search_query_mapper.map(search_term)
             term = query["term"]
             src_query = query["src"]
-            if not term and not src_query:
-                # todo return the last history
-                return []
+
+            if not term:
+                ls = self.history_list.to_list()
+                if not src_query:
+                    return ls
+                return [item for item in ls if item["src"] == src_query]
 
             res_iter = self.grep_wrapper.search_iter(term)
-            MAX_RESULT_COUNT = 10
             result_list = ResultList()
 
             for res_str in chain.from_iterable(res_iter):
@@ -149,14 +167,16 @@ class GrepSearchHandler:
                     else:
                         result_list.add(res)
 
-                if result_list.count() >= MAX_RESULT_COUNT:
+                if result_list.count() >= self.max_result_count:
                     break
 
             return result_list.to_list()
 
     @classmethod
-    def from_directory(cls, texts_dir):
+    def from_directory(cls, texts_dir, max_result_count, history_list):
         _dir = path.expanduser(texts_dir)
-        return cls(GrepWrapper(_dir), 
+        return cls(max_result_count,
+            GrepWrapper(_dir), 
             SearchQueryMapper(), 
-            SearchResultMapper())
+            SearchResultMapper(),
+            history_list)
