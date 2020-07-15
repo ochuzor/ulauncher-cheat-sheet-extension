@@ -4,9 +4,6 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from ulauncher.api.client.EventListener import EventListener
 
-import logging
-
-logger = logging.getLogger(__name__)
 
 class KeywordQueryEventListener(EventListener):
 
