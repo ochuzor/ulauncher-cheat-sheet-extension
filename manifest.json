@@ -1,7 +1,7 @@
 {
   "required_api_version": "^2.0.0",
-  "name": "cheat-sheets",
-  "description": "Demo extension",
+  "name": "Cheat Sheets txt",
+  "description": "Quickly search cheat sheet text files using grep",
   "developer_name": "Chinedu Eze",
   "icon": "images/icon.png",
   "options": {
@@ -9,31 +9,17 @@
   },
   "preferences": [
     {
-      "id": "demo_kw",
+      "id": "cstxt_kw",
       "type": "keyword",
-      "name": "FastTips",
-      "default_value": "ft"
+      "name": "CheatSheetTXT",
+      "default_value": "cs"
     },
     {
-      "id": "demo_path",
+      "id": "cstxt_path",
       "name": "cheat sheet folder",
       "type": "input",
       "default_value": "~/cheat-sheets",
       "description": "The location of the folder containing your cheat sheet text files"
-    },
-    {
-      "id": "item_name",
-      "type": "input",
-      "name": "Item name",
-      "description": "Name for each item",
-      "default_value": "Item"
-    },
-    {
-      "id": "memo",
-      "type": "text",
-      "name": "Memo",
-      "description": "Write something here",
-      "default_value": ""
     }
   ]
 }

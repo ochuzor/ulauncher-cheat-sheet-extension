@@ -60,17 +60,15 @@ class SearchQueryMapper:
 
 
 class GrepWrapper:
-    def __init__(self, texts_dir):
-        self.texts_dir = texts_dir
 
-    def grep(self, str_pattern):
+    def grep(self, str_pattern, texts_dir):
         try:
             # cmd_ls = ["grep", "-i", search_term, 'vim-commands.txt', 'git-command.txt']
             # https://stackoverflow.com/a/35280826
             # grep -r -i --include=\*.txt 'searchterm' ./
             cmd_ls = ["grep", "-r", "-i", "-n", '--include="*.txt"', 
                 f"'{str_pattern}'",
-                self.texts_dir]
+                texts_dir]
             cmd_str = ' '.join(cmd_ls)
             # logger.info(f"cmd: {cmd_str}")
 
@@ -79,7 +77,7 @@ class GrepWrapper:
                 stderr=subprocess.PIPE, 
                 check=True,
                 shell=True,
-                cwd=self.texts_dir)
+                cwd=texts_dir)
 
             output_text = resp.stdout.decode("utf-8")
             if not output_text.strip():
@@ -97,8 +95,8 @@ class GrepWrapper:
 
             return []
 
-    def search_iter(self, text):
-        yield self.grep(text)
+    def search_iter(self, text, texts_dir):
+        yield self.grep(text, texts_dir)
         while text.count(' ') > 0:
             text = text.replace(' ', '.*', 1)
             yield self.grep(text)
@@ -143,7 +141,7 @@ class GrepSearchHandler:
         self.history_list = history_list
         self.max_result_count = max_result_count
 
-    def make_search(self, search_term):
+    def make_search(self, search_term, texts_dir):
             query = self.search_query_mapper.map(search_term)
             term = query["term"]
             src_query = query["src"]
@@ -154,7 +152,7 @@ class GrepSearchHandler:
                     return ls
                 return [item for item in ls if item["src"] == src_query]
 
-            res_iter = self.grep_wrapper.search_iter(term)
+            res_iter = self.grep_wrapper.search_iter(term, texts_dir)
             result_list = ResultList()
 
             for res_str in chain.from_iterable(res_iter):
@@ -173,10 +171,10 @@ class GrepSearchHandler:
             return result_list.to_list()
 
     @classmethod
-    def from_directory(cls, texts_dir, max_result_count, history_list):
-        _dir = path.expanduser(texts_dir)
+    def from_directory(cls, max_result_count, history_list):
+        # _dir = path.expanduser(texts_dir)
         return cls(max_result_count,
-            GrepWrapper(_dir), 
+            GrepWrapper(), 
             SearchQueryMapper(), 
             SearchResultMapper(),
             history_list)

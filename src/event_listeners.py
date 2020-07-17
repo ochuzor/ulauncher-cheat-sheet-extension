@@ -4,6 +4,12 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from ulauncher.api.client.EventListener import EventListener
 
+import logging
+from os import path
+
+
+logger = logging.getLogger(__name__)
+
 
 class KeywordQueryEventListener(EventListener):
 
@@ -11,8 +17,10 @@ class KeywordQueryEventListener(EventListener):
         self.search_handler = search_handler
 
     def on_event(self, event, extension):
+        _dir = path.expanduser(extension.preferences['cstxt_path'])
+        logger.info(_dir)
         qry_str = event.get_argument() or ''
-        results = self.search_handler.make_search(qry_str)
+        results = self.search_handler.make_search(qry_str, _dir)
         items = []
         for data in results:
             items.append(ExtensionResultItem(icon='images/icon.png',
