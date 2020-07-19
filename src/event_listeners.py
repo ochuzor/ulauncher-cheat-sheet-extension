@@ -18,7 +18,6 @@ class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
         _dir = path.expanduser(extension.preferences['cstxt_path'])
-        logger.info(_dir)
         qry_str = event.get_argument() or ''
         results = self.search_handler.make_search(qry_str, _dir)
         items = []

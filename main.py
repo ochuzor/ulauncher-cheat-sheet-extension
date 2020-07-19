@@ -4,11 +4,9 @@ from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
 from src.event_listeners import ItemEnterEventListener, KeywordQueryEventListener
 from src.grep_search_handler import GrepSearchHandler, HistoryList
 
-DEFAULT_CHEAT_SHEETS_DIR = "~/cheat-sheets"
 MAX_RESULT_COUNT = 10
 
 history_list = HistoryList(list(), MAX_RESULT_COUNT)
-# search_handler = GrepSearchHandler.from_directory(DEFAULT_CHEAT_SHEETS_DIR, MAX_RESULT_COUNT, history_list)
 search_handler = GrepSearchHandler.from_directory(MAX_RESULT_COUNT, history_list)
 
 class CheatSheetExtension(Extension):

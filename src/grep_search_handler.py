@@ -7,8 +7,6 @@ from collections import OrderedDict
 
 import logging
 
-from attr import __description__
-
 logger = logging.getLogger(__name__)
 
 
@@ -172,7 +170,6 @@ class GrepSearchHandler:
 
     @classmethod
     def from_directory(cls, max_result_count, history_list):
-        # _dir = path.expanduser(texts_dir)
         return cls(max_result_count,
             GrepWrapper(), 
             SearchQueryMapper(), 
